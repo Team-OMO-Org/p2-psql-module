@@ -44,15 +44,14 @@ CREATE TABLE order_items (
 );
 
 CREATE TABLE shopping_carts (
-	shoping_cart_id  SERIAL PRIMARY KEY,
-	customer_id INT REFERENCES customers(customer_id) ON DELETE CASCADE,
-	shopping_date DATE DEFAULT NOW()
+    shopping_cart_id  SERIAL PRIMARY KEY,
+    customer_id INT REFERENCES customers(customer_id) ON DELETE CASCADE,
+    shopping_date DATE DEFAULT NOW()
 );
 
 CREATE TABLE shopping_cart_items (
-	shoping_cart_items_id  SERIAL PRIMARY KEY,
-	shoping_cart_id INT REFERENCES shopping_carts(shoping_cart_id) ON DELETE CASCADE,
-	product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
-	quantity INT NOT NULL
+     shopping_cart_items_id  SERIAL PRIMARY KEY,
+     shopping_cart_id INT REFERENCES shopping_carts(shopping_cart_id) ON DELETE CASCADE,
+     product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
+     quantity INT NOT NULL
 );
-
