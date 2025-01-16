@@ -14,4 +14,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <dependencies>
+    <!-- PostgreSQL JDBC Driver -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.5</version> <!-- Use the latest version -->
+    </dependency>
+  </dependencies>
+
 </project>

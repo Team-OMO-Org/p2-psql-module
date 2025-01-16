@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/data.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/omop2_db.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/select_tables.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/user_create.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>
