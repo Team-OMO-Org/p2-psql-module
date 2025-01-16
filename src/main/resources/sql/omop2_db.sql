@@ -1,4 +1,8 @@
---CREATE DATABASE omop2_db;
+-- DROP DATABASE IF EXISTS omop2_db;
+-- CREATE DATABASE omop2_db;
+
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
 
 CREATE TABLE customers (
     customer_id SERIAL PRIMARY KEY,
@@ -26,7 +30,7 @@ CREATE TABLE products (
 CREATE TABLE orders (
     order_id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES customers(customer_id) ON DELETE CASCADE,
-    order_date DEFAULT NOW(),
+    order_date DATE DEFAULT NOW(),
     status VARCHAR(50) DEFAULT 'Pending',
     total_amount DECIMAL(10, 2) DEFAULT 0 CHECK (total_amount >= 0),
     CONSTRAINT valid_status CHECK (status IN ('Pending', 'Shipped', 'Delivered', 'Cancelled'))
