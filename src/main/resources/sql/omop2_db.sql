@@ -1,5 +1,5 @@
--- DROP DATABASE IF EXISTS omop2_db;
--- CREATE DATABASE omop2_db;
+--DROP DATABASE IF EXISTS omop2_db;
+--CREATE DATABASE omop2_db;
 
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
@@ -34,6 +34,13 @@ CREATE TABLE orders (
     status VARCHAR(50) DEFAULT 'Pending',
     total_amount DECIMAL(10, 2) DEFAULT 0 CHECK (total_amount >= 0),
     CONSTRAINT valid_status CHECK (status IN ('Pending', 'Shipped', 'Delivered', 'Cancelled'))
+);
+
+CREATE TABLE order_items (
+    order_items_id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(order_id) ON DELETE CASCADE,
+    product_id INT REFERENCES products (product_id) ON DELETE CASCADE,
+    quantity INT NOT NULL
 );
 
 CREATE TABLE shopping_carts (
