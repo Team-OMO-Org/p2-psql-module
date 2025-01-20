@@ -18,3 +18,12 @@ GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO new_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO new_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO new_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO new_user;
+
+-- Grant CONNECT privilege on the database
+GRANT CONNECT ON DATABASE omop2_db TO new_user;
+
+-- Grant USAGE privilege on the schema
+GRANT USAGE ON SCHEMA public TO new_user;
+
+-- Grant SELECT privilege on the specific table
+GRANT SELECT ON TABLE public.orders TO new_user;
