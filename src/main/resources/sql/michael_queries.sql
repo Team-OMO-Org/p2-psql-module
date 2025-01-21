@@ -1,7 +1,3 @@
-SELECT *
-FROM orders
-WHERE customer_id = 1;
-
 -- All orders of a specific customer_id and their status
 SELECT o.order_date, o.order_id, o.status, c.customer_id, c.last_name, c.first_name
 FROM orders o
@@ -13,13 +9,18 @@ GROUP BY o.order_date, o.order_id, c.customer_id
 ORDER BY o.order_date DESC;
 -- ********************************************************************************************************************
 
--- most sold products top 3 with subquery
+-- most sold products top 3 with subquery, incl. more places with same amount of sales
 SELECT SUM(oi.quantity) AS total_sold, oi.product_id, p.product_name
 FROM order_items oi
          JOIN products p ON p.product_id = oi.product_id
 GROUP BY oi.product_id, p.product_name
-ORDER BY SUM(oi.quantity) DESC
-LIMIT 3;
+HAVING SUM(oi.quantity) IN (SELECT SUM(oi.quantity) AS total_sold
+                            FROM order_items oi
+                                     JOIN products p ON p.product_id = oi.product_id
+                            GROUP BY oi.product_id, p.product_name
+                            ORDER BY SUM(oi.quantity) DESC
+                            LIMIT 3)
+ORDER BY SUM(oi.quantity) DESC;
 -- ********************************************************************************************************************
 
 -- best earning categories top 3
