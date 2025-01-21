@@ -42,3 +42,51 @@ FROM order_items oi
 GROUP BY c.customer_id, c.first_name, c.last_name
 ORDER BY SUM(p.price * oi.quantity) DESC;
 -- ********************************************************************************************************************
+
+-- add index for often searched columns to speed up the process
+-- focus on frequently used fields in WHERE, JOIN, and GROUP BY clauses
+
+-- customers table
+CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_customers_name ON customers(last_name, first_name);
+
+-- products table
+CREATE INDEX idx_products_category_id ON products(category_id);
+CREATE INDEX idx_products_price ON products(price);
+CREATE INDEX idx_products_name_category ON products(product_name, category_id);
+
+-- orders table
+CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX idx_orders_date ON orders(order_date);
+CREATE INDEX idx_orders_status_date ON orders(status, order_date);
+
+-- order_items table
+-- ...
+-- ********************************************************************************************************************
+
+-- ToDo: following trigger
+CREATE TRIGGER order_items_total_amount_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON order_items
+    FOR EACH ROW
+EXECUTE FUNCTION update_total_amount();
+
+--
+CREATE OR REPLACE FUNCTION update_total_amount()
+    RETURNS TRIGGER AS $$
+BEGIN
+    -- Recalculate total_amount for the order
+    UPDATE orders
+    SET total_amount = (
+        SELECT COALESCE(SUM(oi.quantity * p.price), 0)
+        FROM order_items oi
+        JOIN public.products p on oi.product_id = p.product_id
+        WHERE oi.order_id = NEW.order_id
+    )
+    WHERE orders.order_id = NEW.order_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
