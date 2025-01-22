@@ -1,1 +1,1 @@
-select * from shopping_cart_items;
+select * from customers;

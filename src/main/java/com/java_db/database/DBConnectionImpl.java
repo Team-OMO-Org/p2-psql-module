@@ -16,6 +16,7 @@ public class DBConnectionImpl implements DBConnection {
 
     private static final String APPLICATION_PROPERTIES_PATH = "src/main/resources/application.properties";
     private Connection connection;
+    private static final String SQL_SCRIPT_FILE_PATH = "src/main/resources/sql/script.sql";;
 
     @Override
     public Connection getConnection() throws SQLException, IOException {
@@ -40,7 +41,7 @@ public class DBConnectionImpl implements DBConnection {
 
         try {
             // Read the file into a single String
-            String script = Files.readString(Path.of("src/main/resources/sql/script.sql"));
+            String script = Files.readString(Path.of(SQL_SCRIPT_FILE_PATH));
 
             // Execute the SQL query
             executeQuery(script);
@@ -88,16 +89,19 @@ public class DBConnectionImpl implements DBConnection {
         boolean foundData = false;
         var meta = resultSet.getMetaData();
 
-        for (int i = 1; i <= meta.getColumnCount(); i++) {
-            System.out.printf("%-28s", meta.getColumnName(i).toUpperCase());
+        int columnCount = meta.getColumnCount();
+        int columnWidth = 28;
+
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.printf("%-" + columnWidth + "s", meta.getColumnName(i).toUpperCase());
         }
         System.out.println();
-        System.out.println("==============================".repeat(8));
+        System.out.println("=".repeat(columnCount * columnWidth));
 
 
         while (resultSet.next()) {
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                System.out.printf("%-28s", resultSet.getString(i));
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.printf("%-" + columnWidth + "s", resultSet.getString(i));
             }
             System.out.println();
             foundData = true;
