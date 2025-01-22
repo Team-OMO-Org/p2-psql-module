@@ -2,7 +2,10 @@ package com.java_db.database;
 
 import java.io.Closeable;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -29,6 +32,21 @@ public class DBConnectionImpl implements DBConnection {
 
         // Return the database connection
         return (connection = DriverManager.getConnection(url, username, password));
+    }
+
+    public void executeScript() {
+
+        String input = "";
+
+        try {
+            // Read the file into a single String
+            String script = Files.readString(Path.of("src/main/resources/sql/script.sql"));
+
+            // Execute the SQL query
+            executeQuery(script);
+        } catch (IOException | SQLException e) {
+            System.out.println("Error executing script: " + e.getMessage());
+        }
     }
 
     @Override
@@ -71,15 +89,15 @@ public class DBConnectionImpl implements DBConnection {
         var meta = resultSet.getMetaData();
 
         for (int i = 1; i <= meta.getColumnCount(); i++) {
-            System.out.printf("%-20s", meta.getColumnName(i).toUpperCase());
+            System.out.printf("%-28s", meta.getColumnName(i).toUpperCase());
         }
         System.out.println();
-        System.out.println("==============================".repeat(2));
+        System.out.println("==============================".repeat(8));
 
 
         while (resultSet.next()) {
             for (int i = 1; i <= meta.getColumnCount(); i++) {
-                System.out.printf("%-20s", resultSet.getString(i));
+                System.out.printf("%-28s", resultSet.getString(i));
             }
             System.out.println();
             foundData = true;

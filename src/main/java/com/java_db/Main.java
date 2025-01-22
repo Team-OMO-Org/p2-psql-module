@@ -33,7 +33,7 @@ public class Main {
             System.out.println("Goodbye!");
             break;
           }
-          db.executeQuery(input);
+          db.executeScript();
           System.out.println();
         }
       }
