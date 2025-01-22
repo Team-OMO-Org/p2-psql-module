@@ -35,13 +35,18 @@ public class DBConnectionImpl implements DBConnection {
         return (connection = DriverManager.getConnection(url, username, password));
     }
 
+    @Override
     public void executeScript() {
 
-        String input = "";
+        executeScript(SQL_SCRIPT_FILE_PATH);
+    }
+
+    @Override
+    public void executeScript(String sqlScriptFilePath) {
 
         try {
             // Read the file into a single String
-            String script = Files.readString(Path.of(SQL_SCRIPT_FILE_PATH));
+            String script = Files.readString(Path.of(sqlScriptFilePath));
 
             // Execute the SQL query
             executeQuery(script);

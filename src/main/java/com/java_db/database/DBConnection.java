@@ -9,5 +9,6 @@ public interface DBConnection {
     Connection getConnection() throws SQLException, IOException;
 
     void executeScript();
+    void executeScript(String sqlScriptFilePath);
     void executeQuery(String input) throws SQLException;
 }
