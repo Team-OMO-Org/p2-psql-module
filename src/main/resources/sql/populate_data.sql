@@ -186,9 +186,10 @@ DO $$
         VALUES  (cus_id,
                  or_date,
                  CASE
-                     WHEN (RANDOM() * 3)::INT = 0 THEN 'Pending'
-                     WHEN (RANDOM() * 3)::INT = 1 THEN 'Shipped'
-                     ELSE 'Delivered'
+                     WHEN (RANDOM() * 4)::INT = 0 THEN 'Pending'
+                     WHEN (RANDOM() * 4)::INT = 1 THEN 'Shipped'
+                     WHEN (RANDOM() * 4)::INT = 2 THEN 'Delivered'
+                     ELSE 'Cancelled'
                      END,
                  total)
         RETURNING order_id INTO or_id;
