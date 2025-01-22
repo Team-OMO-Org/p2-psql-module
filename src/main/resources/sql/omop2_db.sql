@@ -1,8 +1,7 @@
 --DROP DATABASE IF EXISTS omop2_db;
 --CREATE DATABASE omop2_db;
 
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
+DROP TABLE IF EXISTS customers, categories, products, orders, order_items, shopping_carts, shopping_cart_items;
 
 CREATE TABLE customers (
     customer_id SERIAL PRIMARY KEY,
