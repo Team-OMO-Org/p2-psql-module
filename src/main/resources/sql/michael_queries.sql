@@ -109,28 +109,32 @@ CREATE INDEX idx_products_price_btree ON products (price);
 -- ********************************************************************************************************************
 
 -- ToDo: following trigger
-CREATE TRIGGER order_items_total_amount_trigger
-    AFTER INSERT OR UPDATE OR DELETE
-    ON order_items
-    FOR EACH ROW
-EXECUTE FUNCTION update_total_amount();
-
---
 CREATE OR REPLACE FUNCTION update_total_amount()
     RETURNS TRIGGER AS $$
 BEGIN
-    -- Recalculate total_amount for the order
-    UPDATE orders
+    -- Recalculate total_amount for the affected order
+    UPDATE public.orders
     SET total_amount = (
         SELECT COALESCE(SUM(oi.quantity * p.price), 0)
-        FROM order_items oi
-        JOIN public.products p on oi.product_id = p.product_id
-        WHERE oi.order_id = NEW.order_id
+        FROM public.order_items oi
+                 JOIN public.products p ON oi.product_id = p.product_id
+        WHERE oi.order_id = COALESCE(NEW.order_id, OLD.order_id)  -- Handle all cases
     )
-    WHERE orders.order_id = NEW.order_id;
+    WHERE public.orders.order_id = COALESCE(NEW.order_id, OLD.order_id);
 
-    RETURN NEW;
+    RETURN NULL; -- No need to return a value for AFTER triggers
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create the trigger
+CREATE TRIGGER order_items_total_amount_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON public.order_items
+    FOR EACH ROW
+EXECUTE FUNCTION update_total_amount();
 
+-- create new schema and gives right to user:
+CREATE SCHEMA ecommerce;
+GRANT USAGE ON SCHEMA ecommerce TO application_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ecommerce TO application_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA ecommerce GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO application_user;
