@@ -1,5 +1,9 @@
 package com.java_db;
 
+import com.java_db.database.DBConnection;
+import com.java_db.database.DBConnectionImpl;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -17,30 +21,23 @@ import java.util.logging.Logger;
 
 public class Main {
 
-  public static Connection getConnection() throws SQLException, IOException {
-    // Load database properties
-    Properties props = new Properties();
-    FileInputStream fis = new FileInputStream("src/main/resources/application.properties");
-    props.load(fis);
 
-    // Retrieve the connection details from the properties file
-    String url = props.getProperty("db.url");
-    String username = props.getProperty("db.username");
-    String password = props.getProperty("db.password");
-    String driver = props.getProperty("db.driver");
-
-    // Return the database connection
-    return DriverManager.getConnection(url, username, password);
-  }
 
   public static void main(String[] args) {
-    try (Connection connection = getConnection()) {
+    DBConnection dbConnection = new DBConnectionImpl();
+    try (Connection connection = dbConnection.getConnection()) {
       if (connection != null) {
         System.out.println("Connected to the PostgreSQL server successfully!");
         SQLQueryExecutor sqlQueryExecutor = new SQLQueryExecutor(connection);
 
         Scanner scanner = new Scanner(System.in);
         List<MenuOption> menuOptions = new ArrayList<>();
+        menuOptions.add(new MenuOption("Execute SQL script from file", dbConnection::executeScript));
+      /*  menuOptions.add(new MenuOption("Select and execute SQL script from file ", () -> {
+          System.out.print("Enter file path: ");
+          String filePath = scanner.nextLine();
+          dbConnection.executeScript(filePath);
+        }));*/
         menuOptions.add(new MenuOption("Find High-Spending Customers", () -> sqlQueryExecutor.findHighSpendingCustomers(connection)));
         menuOptions.add(new MenuOption("Identify Popular Products", () -> sqlQueryExecutor.identifyPopularProducts(connection)));
         menuOptions.add(new MenuOption("Get Most Popular Products In Category", () -> sqlQueryExecutor.getMostPopularProductsInCategory(connection)));
