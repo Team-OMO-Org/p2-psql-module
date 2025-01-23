@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/olga.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/omop2_db.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/ecommerce-schema/ecommerce_populate_data.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/ecommerce-schema/ecommerce_schema_create.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/ecommerce-schema/test_user_rights.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/ecommerce-schema/user_create.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/public-schema/db_create.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/public-schema/db_data.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/sql/public-schema/olga_queries.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/script.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/select_tables.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/sql/user_create.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

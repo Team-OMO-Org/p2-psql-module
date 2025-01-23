@@ -5,6 +5,15 @@ DROP SCHEMA IF EXISTS ecommerce CASCADE;
 CREATE SCHEMA ecommerce;
 -- SET search_path TO ecommerce;
 
+DROP TABLE IF EXISTS
+    ecommerce.customers,
+    ecommerce.categories,
+    ecommerce.products,
+    ecommerce.orders,
+    ecommerce.order_items,
+    ecommerce.shopping_carts,
+    ecommerce.shopping_cart_items;
+
 CREATE TABLE ecommerce.customers (
                                      customer_id SERIAL PRIMARY KEY,
                                      first_name VARCHAR(50) NOT NULL,
