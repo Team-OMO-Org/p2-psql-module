@@ -54,3 +54,66 @@ CREATE TABLE shopping_cart_items (
      product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
      quantity INT NOT NULL
 );
+
+-- add index for often searched columns to speed up the process
+-- focus on frequently used fields in WHERE, JOIN, and GROUP BY clauses
+-- also index foreign keys, not done automatically in postgres
+
+-- Customers Table
+-- `email` is already indexed due to the UNIQUE constraint, no need for another index.
+CREATE INDEX idx_customers_name ON customers(last_name, first_name);
+
+-- Categories Table
+-- `category_name` is already indexed due to the UNIQUE constraint, no additional index needed.
+
+-- Products Table
+-- Index for the foreign key `category_id` to speed up JOINs.
+CREATE INDEX idx_products_category_id ON products (category_id);
+CREATE INDEX idx_products_name_category ON products(product_name, category_id);
+
+-- Orders Table
+-- Index for the foreign key `customer_id` to speed up JOINs.
+CREATE INDEX idx_orders_customer_id ON orders (customer_id);
+
+-- Index on `status` for filtering queries (e.g., WHERE status = 'Pending').
+CREATE INDEX idx_orders_status ON orders (status);
+
+CREATE INDEX idx_orders_status_date ON orders(status, order_date);
+
+-- partial index, only index rows where status is 'Pending' or 'Shipped'
+CREATE INDEX idx_orders_pending ON orders (order_date)
+    WHERE status = 'Pending';
+
+CREATE INDEX idx_orders_shipped ON orders (order_date)
+    WHERE status = 'Shipped';
+
+
+-- Order Items Table
+-- Index for the foreign keys `order_id` and `product_id` to speed up JOINs.
+CREATE INDEX idx_order_items_order_id ON order_items (order_id);
+CREATE INDEX idx_order_items_product_id ON order_items (product_id);
+
+-- Combined index on `order_id` and `product_id` to optimize queries involving both.
+CREATE INDEX idx_order_items_order_product ON order_items (order_id, product_id);
+
+-- Shopping Carts Table
+-- Index for the foreign key `customer_id` to speed up JOINs.
+CREATE INDEX idx_shopping_carts_customer_id ON shopping_carts (customer_id);
+
+-- Shopping Cart Items Table
+-- Index for the foreign keys `shopping_cart_id` and `product_id` to speed up JOINs.
+CREATE INDEX idx_shopping_cart_items_cart_id ON shopping_cart_items (shopping_cart_id);
+CREATE INDEX idx_shopping_cart_items_product_id ON shopping_cart_items (product_id);
+
+-- Combined index on `shopping_cart_id` and `product_id` for queries involving both.
+CREATE INDEX idx_shopping_cart_items_cart_product ON shopping_cart_items (shopping_cart_id, product_id);
+
+-- Additional Index Types
+-- Gin Index on `description` in categories for full-text search queries.
+CREATE INDEX idx_categories_description_gin ON categories USING gin (to_tsvector('english', description));
+
+-- Brin Index on `registered_at` in customers for range queries on dates. clustered values
+CREATE INDEX idx_customers_registered_at_brin ON customers USING brin (registered_at);
+
+-- Btree Index on `price` in products for range queries (e.g., WHERE price BETWEEN x AND y).
+CREATE INDEX idx_products_price_btree ON products (price);
