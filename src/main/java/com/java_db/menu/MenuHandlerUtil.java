@@ -1,9 +1,9 @@
-package com.java_db;
+package com.java_db.menu;
 
 import java.util.List;
 import java.util.Scanner;
 
-class MenuHandlerUtil {
+public class MenuHandlerUtil {
 
   private final List<MenuOption> menuOptions;
   private final Scanner scanner;
@@ -42,21 +42,4 @@ class MenuHandlerUtil {
   }
 }
 
-class MenuOption {
 
-  private final String optionName;
-  private final Runnable action;
-
-  public MenuOption(String optionName, Runnable action) {
-    this.optionName = optionName;
-    this.action = action;
-  }
-
-  public String getOptionName() {
-    return optionName;
-  }
-
-  public void execute() {
-    action.run();
-  }
-}

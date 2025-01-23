@@ -40,6 +40,7 @@ public class DBConnectionImpl implements DBConnection {
             String script = Files.readString(Path.of(sqlScriptFilePath));
             // Execute the SQL query
             executeQuery(script);
+            System.out.println("Script executed successfully");
         } catch (IOException | SQLException e) {
             System.out.println("Error executing script: " + e.getMessage());
         }
