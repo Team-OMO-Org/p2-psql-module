@@ -118,7 +118,7 @@ HAVING COUNT(DISTINCT cat.category_id) = (SELECT COUNT(*) FROM categories);
 -- 16. Average quantity of items per order.
 SELECT AVG(item_count) AS avg_items_per_order
 FROM (
-    SELECT order_id, SUM(quantity) AS item_count
+    SELECT SUM(quantity) AS item_count
     FROM order_items
     GROUP BY order_id
 ) AS order_totals;
@@ -135,6 +135,7 @@ ORDER BY c.category_name;
 WITH MostExpensiveProduct AS (
     SELECT product_id, MAX(price) AS max_price
     FROM products
+    GROUP BY product_id
 )
 SELECT c.customer_id, c.first_name, c.last_name
 FROM customers c
@@ -143,37 +144,125 @@ JOIN order_items oi ON o.order_id = oi.order_id
 JOIN MostExpensiveProduct mep ON oi.product_id = mep.product_id
 GROUP BY c.customer_id, c.first_name, c.last_name;
 
--- 19. Transaction to bulk update product prices during a sale.
-BEGIN;
-UPDATE products
-SET price = price * 0.9
-WHERE category_id IN (1, 3);
-
-INSERT INTO price_changes (product_id, old_price, new_price, change_date)
-SELECT product_id, price / 0.9, price, NOW()
-FROM products
-WHERE category_id IN (1, 3);
-
-COMMIT;
-
 -- 20. Rolling back a transaction if an order exceeds stock.
-BEGIN;
-INSERT INTO orders (customer_id, order_date, status, total_amount)
-VALUES (1, NOW(), 'Pending', 100.00)
-RETURNING order_id INTO new_order_id;
-
-INSERT INTO order_items (order_id, product_id, quantity)
-VALUES (new_order_id, 1, 10);
-
--- Check stock and rollback if insufficient.
 DO $$
+    DECLARE
+        new_order_id INT;
+    BEGIN
+        -- Start the transaction
+        BEGIN
+            -- Insert into orders and get the new order_id
+            INSERT INTO orders (customer_id, order_date, status, total_amount)
+            VALUES (1, NOW(), 'Pending', 100.00)
+            RETURNING order_id INTO new_order_id;
+
+            -- Insert into order_items using the new order_id
+            INSERT INTO order_items (order_id, product_id, quantity)
+            VALUES (new_order_id, 1, 10);
+
+            -- Check stock and rollback if insufficient
+            IF (SELECT stock_quantity FROM products WHERE product_id = 1) < 10 THEN
+                ROLLBACK;
+                RAISE EXCEPTION 'Insufficient stock';
+            ELSE
+                COMMIT;
+            END IF;
+        END;
+    END $$;
+
+-- 21. CREATE VIEW order_details
+CREATE VIEW order_details AS
+SELECT
+    o.order_id,
+    o.order_date,
+    o.status,
+    c.first_name || ' ' || c.last_name AS customer_name,
+    p.product_name,
+    oi.quantity,
+    (oi.quantity * p.price) AS line_total,
+    o.total_amount AS order_total
+FROM
+    orders o
+JOIN
+    customers c ON o.customer_id = c.customer_id
+JOIN
+    order_items oi ON o.order_id = oi.order_id
+JOIN
+    products p ON oi.product_id = p.product_id;
+
+-- 22. Orders by Status and Total Revenue using View order_details
+SELECT
+    status,
+    COUNT(order_id) AS total_orders,
+    SUM(order_total) AS total_revenue
+FROM
+    order_details
+GROUP BY
+    status
+ORDER BY
+    total_orders DESC;
+
+-- 23. Create the trigger trigger_update_stock_and_total
+CREATE OR REPLACE FUNCTION update_stock_and_order_total() RETURNS TRIGGER AS $$
 BEGIN
-   IF (SELECT stock_quantity FROM products WHERE product_id = 1) < 10 THEN
-      ROLLBACK;
-      RAISE EXCEPTION 'Insufficient stock';
-   ELSE
-      COMMIT;
-   END IF;
-END $$;
+    IF (TG_OP = 'DELETE') THEN
+        -- Add stock back when an order item is removed
+        UPDATE products
+        SET stock_quantity = stock_quantity + OLD.quantity
+        WHERE product_id = OLD.product_id;
+
+        -- Update the total amount in the orders table
+        UPDATE orders
+        SET total_amount = total_amount - (OLD.quantity * (SELECT price FROM products WHERE product_id = OLD.product_id))
+        WHERE order_id = OLD.order_id;
+
+    ELSE
+        -- Deduct stock when a new order item is added
+        UPDATE products
+        SET stock_quantity = stock_quantity - NEW.quantity
+        WHERE product_id = NEW.product_id;
+
+        -- Ensure stock does not fall below zero
+        IF (SELECT stock_quantity FROM products WHERE product_id = NEW.product_id) < 0 THEN
+            RAISE EXCEPTION 'Insufficient stock for product_id: %', NEW.product_id;
+        END IF;
+
+        -- Update the total amount in the orders table
+        UPDATE orders
+        SET total_amount = total_amount + (NEW.quantity * (SELECT price FROM products WHERE product_id = NEW.product_id))
+        WHERE order_id = NEW.order_id;
+
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach the trigger to the order_items table
+CREATE TRIGGER trigger_update_stock_and_total
+    AFTER INSERT OR UPDATE OR DELETE ON order_items
+    FOR EACH ROW
+EXECUTE FUNCTION update_stock_and_order_total();
+
+-- 24. Create the trigger trigger_prevent_category_deletion
+CREATE OR REPLACE FUNCTION prevent_category_deletion() RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if there are any products associated with the category to be deleted
+    IF EXISTS (SELECT 1 FROM products WHERE category_id = OLD.category_id) THEN
+        -- Raise an exception if there are products associated with the category
+        RAISE EXCEPTION 'Cannot delete category % as it is still associated with products', OLD.category_id;
+    END IF;
+
+    -- Return OLD to proceed with the deletion
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach the trigger to the categories table
+CREATE TRIGGER trigger_prevent_category_deletion
+    BEFORE DELETE ON categories
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_category_deletion();
+
+
+
 
 

@@ -34,8 +34,6 @@ public class Main {
             sqlQueryExecutor::findHighSpendingCustomers));
         menuOptions.add(new MenuOption("Identify Popular Products",
             sqlQueryExecutor::identifyPopularProducts));
-        menuOptions.add(new MenuOption("Get Most Popular Products In Category",
-            sqlQueryExecutor::getMostPopularProductsInCategory));
         menuOptions.add(new MenuOption("Get Customers Without Orders",
             sqlQueryExecutor::getCustomersWithoutOrders));
         menuOptions.add(new MenuOption("Get Products In Carts Not Purchased",
@@ -52,11 +50,15 @@ public class Main {
             sqlQueryExecutor::getMostValuableCustomers));
         menuOptions.add(new MenuOption("Get Top Products By Category",
             sqlQueryExecutor::getTopProductsByCategory));
+        menuOptions.add(new MenuOption("Orders by Status and Total Revenue using View order_details",
+            sqlQueryExecutor::getOrderSummaryByStatus));
         menuOptions.add(new MenuOption("Customer Order History", () -> {
           System.out.print("Enter customer ID: ");
           int customerId = scanner.nextInt();
           sqlQueryExecutor.customerOrderHistory(connection, customerId);
         }));
+        menuOptions.add(new MenuOption("Batch Insert Customers",
+            sqlQueryExecutor::batchInsertCustomers));
         menuOptions.add(new MenuOption("Bulk Update Product Prices During Sale",
             sqlQueryExecutor::bulkUpdateProductPricesDuringSale));
         menuOptions.add(new MenuOption("Create Order With Stock Validation", () -> {
@@ -69,6 +71,11 @@ public class Main {
           System.out.print("Enter total amount: ");
           double totalAmount = scanner.nextDouble();
           sqlQueryExecutor.createOrderWithStockValidation(customerId, productId, quantity, totalAmount);
+        }));
+        menuOptions.add(new MenuOption("Delete Category using prevent_category_deletion Trigger", () -> {
+          System.out.print("Enter category ID: ");
+          int categoryId = scanner.nextInt();
+          sqlQueryExecutor.deleteCategory(categoryId);
         }));
         MenuHandlerUtil menuHandler = new MenuHandlerUtil(menuOptions, scanner);
         menuHandler.interactWithUser();
