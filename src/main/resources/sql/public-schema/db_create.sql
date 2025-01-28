@@ -1,7 +1,7 @@
 --DROP DATABASE IF EXISTS omop2_db;
 --CREATE DATABASE omop2_db;
 
-DROP TABLE IF EXISTS customers, categories, products, orders, order_items, shopping_carts, shopping_cart_items;
+DROP TABLE IF EXISTS customers, categories, products, orders, order_items, shopping_carts, shopping_cart_items CASCADE;
 
 CREATE TABLE customers (
     customer_id SERIAL PRIMARY KEY,
@@ -137,3 +137,23 @@ FROM
     order_items oi ON o.order_id = oi.order_id
         JOIN
     products p ON oi.product_id = p.product_id;
+
+-- Create the trigger trigger_prevent_category_deletion
+CREATE OR REPLACE FUNCTION prevent_category_deletion() RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if there are any products associated with the category to be deleted
+    IF EXISTS (SELECT 1 FROM products WHERE category_id = OLD.category_id) THEN
+        -- Raise an exception if there are products associated with the category
+        RAISE EXCEPTION 'Cannot delete category % as it is still associated with products', OLD.category_id;
+    END IF;
+
+    -- Return OLD to proceed with the deletion
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach the trigger to the categories table
+CREATE TRIGGER trigger_prevent_category_deletion
+    BEFORE DELETE ON categories
+    FOR EACH ROW
+EXECUTE FUNCTION prevent_category_deletion();
